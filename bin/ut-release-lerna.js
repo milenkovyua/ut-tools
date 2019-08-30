@@ -71,11 +71,11 @@ async function release() {
                         '--release-count',
                         graduate ? '0' : '1', // set how many
                         '--commit-path',
-                        '$PWD',
+                        pkg.location,
                         '--pkg',
-                        '$PWD' + '/package.json',
+                        pkg.location + '/package.json',
                         '--outfile',
-                        '$PWD' + '/CHANGELOG.md',
+                        pkg.location + '/CHANGELOG.md',
                         '--verbose',
                         '--append',
                         '--lerna-package',
@@ -106,3 +106,4 @@ async function release() {
 }
 
 release();
+
