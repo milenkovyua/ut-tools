@@ -53,21 +53,47 @@ async function release() {
                 ]);
             });
         } else {
+            const graduateList = [];
+
+            packages.forEach(pkg => {
+                const graduate = /-[0-9A-Za-z-]+\./.test(pkg.version);
+                if (graduate) graduateList.push(pkg.name);
+
+                exec('lerna', [
+                    'exec',
+                    '--concurrency',
+                    '1',
+                    '--',
+                    '"' + [
+                        'conventional-changelog',
+                        '--preset',
+                        'angular',
+                        '--release-count',
+                        graduate ? '0' : '1', // set how many
+                        '--commit-path',
+                        '$PWD',
+                        '--pkg',
+                        '$PWD' + '/package.json',
+                        '--outfile',
+                        '$PWD' + '/CHANGELOG.md',
+                        '--verbose',
+                        '--append',
+                        '--lerna-package',
+                        pkg.name
+                    ].join(' ') + '"'
+                ]);
+            });
+
             const cmd = [
                 'version',
                 '--conventional-commits',
+                '--no-changelog',
                 '--yes',
                 '--message',
                 '"chore(release): [ci-skip] publish"'
             ];
 
-            // packages with prerelease versions that have to be graduated
-            const graduate = packages
-                .filter(p => /-[0-9A-Za-z-]+\./.test(p.version))
-                .map(p => p.name)
-                .join(',');
-
-            if (graduate) cmd.push('--conventional-graduate=' + graduate);
+            if (graduateList.length) cmd.push('--conventional-graduate=' + graduateList.join(','));
 
             exec('lerna', cmd);
         }
